@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>GTD Done</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0d0f;--surface:#17171a;--surface2:#1e1e22;--surface3:#26262c;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --text:#f0f0f2;--text2:#8a8a96;--text3:#4a4a56;
+  --accent:#ff6b2b;--red:#ff453a;--green:#32d74b;--blue:#0a84ff;--purple:#bf5af2;
+  --sans:'DM Sans',sans-serif;--mono:'DM Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--sans)}
+body{overflow:hidden}
+.app{display:grid;grid-template-columns:220px 1fr;height:100vh;height:100dvh}
+.sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.main{display:flex;flex-direction:column;overflow:hidden;position:relative}
+.logo{padding:24px 18px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.logo-mark{width:30px;height:30px;background:var(--accent);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;font-family:var(--mono)}
+.logo-name{font-size:15px;font-weight:600}
+.logo-sub{font-size:9px;color:var(--text3);font-family:var(--mono);letter-spacing:1px;text-transform:uppercase}
+.snav{flex:1;overflow-y:auto;padding:10px 8px}
+.snav-label{font-size:10px;color:var(--text3);letter-spacing:1px;text-transform:uppercase;padding:10px 8px 4px;font-family:var(--mono)}
+.sitem{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;color:var(--text2);font-size:13px;border:none;background:none;width:100%;text-align:left;transition:all .15s}
+.sitem:hover{background:var(--surface2);color:var(--text)}
+.sitem.on{background:rgba(255,107,43,0.12);color:var(--accent)}
+.sitem .ic{width:16px;text-align:center;font-size:13px;flex-shrink:0}
+.sitem .cnt{margin-left:auto;background:var(--surface3);color:var(--text3);font-size:10px;padding:1px 6px;border-radius:8px;font-family:var(--mono)}
+.sitem.on .cnt{background:rgba(255,107,43,0.2);color:var(--accent)}
+.sfooter{padding:12px 8px 16px;border-top:1px solid var(--border)}
+.score-card{background:var(--surface2);border-radius:10px;padding:12px 14px}
+.score-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:var(--mono);margin-bottom:5px}
+.score-val{font-size:20px;font-weight:300;color:var(--text)}
+.score-val span{font-size:12px;color:var(--text3)}
+.score-bar{height:3px;background:var(--surface3);border-radius:2px;margin-top:8px;overflow:hidden}
+.score-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--accent),#ff9500);transition:width .5s}
+.mhead{padding:22px 24px 0;display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0}
+.vtitle{font-size:24px;font-weight:300;letter-spacing:-.5px}
+.vsub{font-size:12px;color:var(--text3);margin-top:3px;font-family:var(--mono)}
+.hbtns{display:flex;gap:8px}
+.btn{padding:7px 14px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-family:var(--sans);font-size:13px;cursor:pointer;transition:all .15s}
+.btn:hover{background:var(--surface2);color:var(--text)}
+.btn-p{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:500}
+.btn-p:hover{background:#ff7c3d;border-color:#ff7c3d;color:#fff}
+.sortbar{padding:14px 24px 0;display:flex;align-items:center;gap:6px;flex-shrink:0;overflow-x:auto}
+.sortbar::-webkit-scrollbar{display:none}
+.chip{padding:5px 12px;border-radius:20px;font-size:12px;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;transition:all .15s;font-family:var(--sans);white-space:nowrap;flex-shrink:0}
+.chip:hover{border-color:var(--border2);color:var(--text2)}
+.chip.on{border-color:var(--accent);color:var(--accent);background:rgba(255,107,43,0.08)}
+.ssep{width:1px;height:16px;background:var(--border);flex-shrink:0}
+.search-wrap{margin-left:auto;position:relative;flex-shrink:0}
+.search-inp{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 12px 6px 30px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;width:180px;transition:all .2s}
+.search-inp:focus{border-color:var(--border2);width:220px}
+.search-inp::placeholder{color:var(--text3)}
+.search-ic{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:12px;pointer-events:none}
+.tarea{flex:1;overflow-y:auto;padding:14px 24px 20px}
+.tarea::-webkit-scrollbar{width:3px}
+.tarea::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:2px}
+.sec-head{display:flex;align-items:center;gap:8px;margin:14px 0 8px}
+.sec-title{font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:var(--mono)}
+.sec-line{flex:1;height:1px;background:var(--border)}
+.sec-cnt{font-size:10px;color:var(--text3);font-family:var(--mono)}
+.tcard{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:5px;display:flex;align-items:flex-start;gap:10px;position:relative;overflow:hidden;transition:border-color .15s,background .15s;animation:fadeUp .18s ease both}
+.tcard:hover{border-color:var(--border2);background:var(--surface2)}
+.tcard.is-focus{border-color:rgba(255,107,43,0.35);background:rgba(255,107,43,0.04)}
+.tcard.is-urgent{border-color:rgba(255,69,58,0.3)}
+.tcard.is-done{opacity:.45}
+.stripe{position:absolute;left:0;top:0;bottom:0;width:3px}
+.s-urgent{background:var(--red)}.s-high{background:var(--accent)}.s-normal{background:var(--green)}.s-later{background:var(--text3)}
+.chk{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border2);background:transparent;cursor:pointer;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:all .15s;color:transparent;font-size:10px}
+.chk:hover{border-color:var(--green)}
+.chk.done{background:var(--green);border-color:var(--green);color:#fff}
+.tbody{flex:1;min-width:0}
+.tname{font-size:14px;color:var(--text);line-height:1.4}
+.tname.cross{text-decoration:line-through;color:var(--text3)}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.tag{font-size:10px;padding:2px 7px;border-radius:4px;font-family:var(--mono);font-weight:500}
+.t-urgent{background:rgba(255,69,58,0.15);color:var(--red)}
+.t-high{background:rgba(255,107,43,0.15);color:var(--accent)}
+.t-focus{background:rgba(255,107,43,0.2);color:var(--accent);border:1px solid rgba(255,107,43,0.3)}
+.t-proj{background:rgba(10,132,255,0.12);color:var(--blue)}
+.t-tag{background:rgba(191,90,242,0.12);color:var(--purple)}
+.t-date{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+.tright{display:flex;flex-direction:column;align-items:flex-end;gap:6px;flex-shrink:0}
+.sc{font-size:11px;font-family:var(--mono);color:var(--text3);display:flex;align-items:center;gap:3px}
+.sdot{width:6px;height:6px;border-radius:50%}
+.delbtn{background:none;border:none;color:var(--text3);font-size:15px;cursor:pointer;padding:2px;line-height:1}
+.delbtn:hover{color:var(--red)}
+.editbtn{background:none;border:none;color:var(--text3);font-size:14px;cursor:pointer;padding:2px;line-height:1}
+.editbtn:hover{color:var(--accent)}
+.wpreview{position:absolute;top:22px;right:24px;width:190px;background:rgba(23,23,26,0.97);border:1px solid var(--border2);border-radius:14px;padding:12px;z-index:10;display:none}
+.wpreview.show{display:block}
+.wp-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;font-family:var(--mono);margin-bottom:8px}
+.wp-focus{background:rgba(255,107,43,0.1);border-radius:8px;padding:8px 10px;border:1px solid rgba(255,107,43,0.2);margin-bottom:6px}
+.wp-fl{font-size:8px;color:rgba(255,149,0,.7);text-transform:uppercase;letter-spacing:.8px;margin-bottom:2px;font-family:var(--mono)}
+.wp-ft{font-size:12px;color:var(--text);font-weight:500;line-height:1.3}
+.wp-item{display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border)}
+.wp-item:last-child{border-bottom:none}
+.wp-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.wp-tn{font-size:11px;color:var(--text2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wp-d{font-size:10px;color:var(--text3);font-family:var(--mono)}
+.backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:400}
+.backdrop.show{display:block}
+.addpanel{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border2);padding:20px 24px 36px;transform:translateY(100%);transition:transform .25s cubic-bezier(.16,1,.3,1);z-index:500;max-height:88vh;overflow-y:auto}
+.addpanel.open{transform:translateY(0)}
+.ap-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.ap-title{font-size:14px;font-weight:500;color:var(--text2)}
+.ap-close{background:none;border:none;color:var(--text3);font-size:22px;cursor:pointer;padding:0;line-height:1}
+.ap-input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:12px 14px;color:var(--text);font-family:var(--sans);font-size:15px;outline:none;transition:border-color .2s}
+.ap-input:focus{border-color:var(--accent)}
+.ap-input::placeholder{color:var(--text3)}
+.ai-bar{background:rgba(10,132,255,0.08);border:1px solid rgba(10,132,255,0.2);border-radius:8px;padding:7px 12px;font-size:12px;color:rgba(100,180,255,.9);margin:10px 0 0;display:none;font-family:var(--mono)}
+.opt-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin:14px 0 0}
+.opt-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;font-family:var(--mono);display:block;margin-bottom:5px}
+.opt-sel{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;color:var(--text);font-family:var(--sans);font-size:13px;outline:none;cursor:pointer}
+.due-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;font-family:var(--mono);margin-top:14px;margin-bottom:6px}
+.date-row{display:flex;gap:6px;flex-wrap:wrap}
+.dchip{padding:5px 11px;border-radius:6px;border:1px solid var(--border);background:transparent;color:var(--text3);font-size:12px;cursor:pointer;transition:all .15s;font-family:var(--mono)}
+.dchip:hover{border-color:var(--border2);color:var(--text2)}
+.dchip.on{border-color:var(--accent);color:var(--accent);background:rgba(255,107,43,0.08)}
+.ap-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}
+.empty{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty-ic{font-size:36px;margin-bottom:14px;opacity:.4}
+.toast{position:fixed;bottom:80px;right:20px;background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:11px 15px;font-size:13px;color:var(--text);display:flex;align-items:center;gap:8px;transform:translateY(20px);opacity:0;transition:all .3s cubic-bezier(.16,1,.3,1);z-index:600;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+.btab{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border2);padding:6px 0 18px;z-index:300;justify-content:space-around}
+.btab-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 10px;cursor:pointer;border:none;background:none;flex:1}
+.btab-ic{font-size:22px;line-height:1}
+.btab-lb{font-size:10px;color:var(--text3);font-weight:500;transition:color .15s}
+.btab-item.on .btab-lb{color:var(--accent)}
+.fab{display:none;position:fixed;bottom:88px;right:18px;width:52px;height:52px;border-radius:50%;background:var(--accent);border:none;color:#fff;font-size:28px;cursor:pointer;z-index:300;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(255,107,43,.4);line-height:1}
+@media(max-width:680px){
+  .app{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .mhead{padding:14px 16px 0}
+  .vtitle{font-size:20px}
+  .hbtns .btn-p{display:none}
+  .hbtns .btn{font-size:11px;padding:6px 10px}
+  .sortbar{padding:10px 16px 0}
+  .search-wrap{display:none}
+  .tarea{padding:12px 16px 130px}
+  .addpanel{padding:16px 16px 40px}
+  .opt-grid{grid-template-columns:1fr 1fr}
+  .btab{display:flex}
+  .fab{display:flex}
+  .toast{bottom:90px}
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">G</div>
+      <div>
+        <div class="logo-name">GTD Done</div>
+        <div class="logo-sub">일을 놓치지 않는 법</div>
+      </div>
+    </div>
+    <nav class="snav">
+      <div class="snav-label">스마트 뷰</div>
+      <button class="sitem on" id="sv-today" onclick="setView('today')"><span class="ic">☀️</span>오늘 할 일<span class="cnt" id="c-today">0</span></button>
+      <button class="sitem" id="sv-focus" onclick="setView('focus')"><span class="ic">🎯</span>집중 모드<span class="cnt" id="c-focus">0</span></button>
+      <button class="sitem" id="sv-upcoming" onclick="setView('upcoming')"><span class="ic">📅</span>예정된 일<span class="cnt" id="c-upcoming">0</span></button>
+      <button class="sitem" id="sv-all" onclick="setView('all')"><span class="ic">📋</span>모든 할 일<span class="cnt" id="c-all">0</span></button>
+      <div class="snav-label">프로젝트</div>
+      <button class="sitem" id="sv-work" onclick="setView('work')"><span class="ic">💼</span>업무<span class="cnt" id="c-work">0</span></button>
+      <button class="sitem" id="sv-vonai" onclick="setView('vonai')"><span class="ic">🤖</span>Von AI<span class="cnt" id="c-vonai">0</span></button>
+      <button class="sitem" id="sv-personal" onclick="setView('personal')"><span class="ic">🏠</span>개인<span class="cnt" id="c-personal">0</span></button>
+      <div class="snav-label">완료</div>
+      <button class="sitem" id="sv-done" onclick="setView('done')"><span class="ic">✅</span>완료됨<span class="cnt" id="c-done">0</span></button>
+    </nav>
+    <div class="sfooter">
+      <div class="score-card">
+        <div class="score-label">오늘 생산성</div>
+        <div class="score-val"><span id="prod-num">0</span> <span>/ 100</span></div>
+        <div class="score-bar"><div class="score-fill" id="prod-bar" style="width:0%"></div></div>
+      </div>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="mhead">
+      <div>
+        <div class="vtitle" id="vtitle">오늘 할 일</div>
+        <div class="vsub" id="vsub">AI가 우선순위를 자동으로 정렬합니다</div>
+      </div>
+      <div class="hbtns">
+        <button class="btn" onclick="toggleWidget()">📱 위젯</button>
+        <button class="btn btn-p" onclick="openAdd()">+ 추가</button>
+      </div>
+    </div>
+    <div class="sortbar">
+      <button class="chip on" id="sort-ai" onclick="setSort('ai')">🤖 AI 정렬</button>
+      <button class="chip" id="sort-priority" onclick="setSort('priority')">긴급도순</button>
+      <button class="chip" id="sort-due" onclick="setSort('due')">마감일순</button>
+      <button class="chip" id="sort-added" onclick="setSort('added')">추가순</button>
+      <div class="ssep"></div>
+      <div class="search-wrap">
+        <span class="search-ic">🔍</span>
+        <input class="search-inp" placeholder="검색..." oninput="doSearch(this.value)">
+      </div>
+    </div>
+    <div class="tarea" id="tarea"></div>
+    <div class="wpreview" id="wpreview">
+      <div class="wp-label">홈화면 위젯</div>
+      <div class="wp-focus"><div class="wp-fl">지금 집중</div><div class="wp-ft" id="wp-focus">—</div></div>
+      <div id="wp-list"></div>
+    </div>
+  </main>
+</div>
+
+<div class="btab">
+  <button class="btab-item on" id="bt-today" onclick="setViewM('today')"><span class="btab-ic">☀️</span><span class="btab-lb">오늘</span></button>
+  <button class="btab-item" id="bt-all" onclick="setViewM('all')"><span class="btab-ic">📋</span><span class="btab-lb">전체</span></button>
+  <button class="btab-item" id="bt-focus" onclick="setViewM('focus')"><span class="btab-ic">🎯</span><span class="btab-lb">집중</span></button>
+  <button class="btab-item" id="bt-done" onclick="setViewM('done')"><span class="btab-ic">✅</span><span class="btab-lb">완료됨</span></button>
+</div>
+
+<button class="fab" onclick="openAdd()">+</button>
+<div class="backdrop" id="backdrop" onclick="closeAdd()"></div>
+
+<div class="addpanel" id="addpanel">
+  <div class="ap-head">
+    <span class="ap-title">새 할 일 추가</span>
+    <button class="ap-close" onclick="closeAdd()">×</button>
+  </div>
+  <input class="ap-input" id="ap-input" placeholder="무엇을 해야 하나요?" oninput="aiDetect(this.value)" onkeydown="if(event.key==='Enter')saveTask()">
+  <div class="ai-bar" id="ai-bar"></div>
+  <div class="opt-grid">
+    <div><label class="opt-label">우선순위</label><select class="opt-sel" id="sel-pri"><option value="urgent">🔴 긴급</option><option value="high" selected>🟠 높음</option><option value="normal">🟢 보통</option><option value="later">⚫ 나중에</option></select></div>
+    <div><label class="opt-label">프로젝트</label><select class="opt-sel" id="sel-proj"><option value="none">없음</option><option value="work">💼 업무</option><option value="vonai">🤖 Von AI</option><option value="personal">🏠 개인</option></select></div>
+    <div><label class="opt-label">태그</label><select class="opt-sel" id="sel-tag"><option value="">없음</option><option value="회의">회의</option><option value="검토">검토</option><option value="발표">발표</option><option value="구매">구매</option><option value="연락">연락</option></select></div>
+  </div>
+  <div class="due-label">마감일</div>
+  <div class="date-row">
+    <button class="dchip on" onclick="selDate('오늘',this)">오늘</button>
+    <button class="dchip" onclick="selDate('내일',this)">내일</button>
+    <button class="dchip" onclick="selDate('이번 주',this)">이번 주</button>
+    <button class="dchip" onclick="selDate('다음 주',this)">다음 주</button>
+    <button class="dchip" onclick="selDate('나중에',this)">나중에</button>
+  </div>
+  <div class="ap-actions">
+    <button class="btn" onclick="closeAdd()">취소</button>
+    <button class="btn btn-p" id="ap-save-btn" onclick="saveTask()">추가하기 →</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toast-ic">✅</span> <span id="toast-msg"></span></div>
+
+<script>
+var DEFAULTS = [
+  {id:1,name:'투자자 IR 덱 최종 검토',pri:'urgent',proj:'vonai',tag:'발표',due:'오늘',done:false,ts:Date.now()-600000},
+  {id:2,name:'창업중심대학 2차 신청서 작성',pri:'urgent',proj:'work',tag:'검토',due:'오늘',done:false,ts:Date.now()-500000},
+  {id:3,name:'VON-R1 온디바이스 AI 데모 영상',pri:'high',proj:'vonai',tag:'',due:'내일',done:false,ts:Date.now()-400000},
+  {id:4,name:'팀 주간 보고서 작성',pri:'high',proj:'work',tag:'',due:'이번 주',done:false,ts:Date.now()-300000},
+  {id:5,name:'특허 출원 서류 변리사 전달',pri:'high',proj:'vonai',tag:'연락',due:'이번 주',done:false,ts:Date.now()-250000},
+  {id:6,name:'연구실 Jetson Orin 펌웨어 업데이트',pri:'normal',proj:'vonai',tag:'',due:'이번 주',done:false,ts:Date.now()-200000},
+  {id:7,name:'학회 논문 초안 검토',pri:'normal',proj:'work',tag:'검토',due:'다음 주',done:false,ts:Date.now()-150000},
+  {id:8,name:'위스키 컬렉션 목록 정리',pri:'later',proj:'personal',tag:'',due:'나중에',done:false,ts:Date.now()-100000},
+  {id:9,name:'스키 장비 점검 예약',pri:'later',proj:'personal',tag:'연락',due:'나중에',done:false,ts:Date.now()-50000},
+  {id:10,name:'가스레인지 AS 부품 주문',pri:'normal',proj:'personal',tag:'구매',due:'오늘',done:true,ts:Date.now()-800000}
+];
+
+function loadTasks() {
+  try {
+    var s = localStorage.getItem('gtd3');
+    if (s) return JSON.parse(s);
+  } catch(e) {}
+  return DEFAULTS;
+}
+
+function saveTasks() {
+  try {
+    localStorage.setItem('gtd3', JSON.stringify(tasks));
+    localStorage.setItem('gtd3_id', String(nextId));
+  } catch(e) {}
+}
+
+function loadId() {
+  try {
+    var v = localStorage.getItem('gtd3_id');
+    return v ? parseInt(v) : 11;
+  } catch(e) {
+    return 11;
+  }
+}
+
+var tasks = loadTasks();
+var nextId = loadId();
+var curView = 'today';
+var curSort = 'ai';
+var curSearch = '';
+var curDue = '오늘';
+var editingId = null;
+
+function calcScore(t) {
+  var s = {urgent:40, high:25, normal:12, later:3}[t.pri] || 3;
+  var dm = {오늘:30, 내일:18, '이번 주':10, '다음 주':5, 나중에:0};
+  s += dm[t.due] || 0;
+  if (t.proj === 'vonai') s += 10;
+  else if (t.proj === 'work') s += 8;
+  if (t.tag === '발표') s += 8;
+  if (t.tag === '회의') s += 6;
+  return Math.min(Math.round(s), 100);
+}
+
+function getList() {
+  var list = tasks.slice();
+  if (curView === 'today') {
+    list = list.filter(function(t) { return !t.done && (t.due === '오늘' || t.pri === 'urgent'); });
+  } else if (curView === 'focus') {
+    list = list.filter(function(t) { return !t.done && (t.pri === 'urgent' || t.pri === 'high'); });
+  } else if (curView === 'upcoming') {
+    list = list.filter(function(t) { return !t.done && (t.due === '내일' || t.due === '이번 주' || t.due === '다음 주'); });
+  } else if (curView === 'all') {
+    list = list.filter(function(t) { return !t.done; });
+  } else if (curView === 'done') {
+    list = list.filter(function(t) { return t.done; });
+  } else if (curView === 'work') {
+    list = list.filter(function(t) { return !t.done && t.proj === 'work'; });
+  } else if (curView === 'vonai') {
+    list = list.filter(function(t) { return !t.done && t.proj === 'vonai'; });
+  } else if (curView === 'personal') {
+    list = list.filter(function(t) { return !t.done && t.proj === 'personal'; });
+  }
+
+  if (curSearch) {
+    var q = curSearch.toLowerCase();
+    list = list.filter(function(t) {
+      return t.name.toLowerCase().indexOf(q) >= 0 || t.proj.indexOf(q) >= 0 || t.tag.indexOf(q) >= 0;
+    });
+  }
+
+  if (curSort === 'ai') {
+    list.sort(function(a, b) { return calcScore(b) - calcScore(a); });
+  } else if (curSort === 'priority') {
+    var po = {urgent:0, high:1, normal:2, later:3};
+    list.sort(function(a, b) { return po[a.pri] - po[b.pri]; });
+  } else if (curSort === 'due') {
+    var dm2 = {오늘:0, 내일:1, '이번 주':2, '다음 주':3, 나중에:4};
+    list.sort(function(a, b) { return (dm2[a.due] || 9) - (dm2[b.due] || 9); });
+  } else {
+    list.sort(function(a, b) { return b.ts - a.ts; });
+  }
+  return list;
+}
+
+function setText(id, val) {
+  var el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+
+function updateCounts() {
+  var a = tasks.filter(function(t) { return !t.done; });
+  setText('c-today', a.filter(function(t) { return t.due === '오늘' || t.pri === 'urgent'; }).length);
+  setText('c-focus', a.filter(function(t) { return t.pri === 'urgent' || t.pri === 'high'; }).length);
+  setText('c-upcoming', a.filter(function(t) { return t.due === '내일' || t.due === '이번 주' || t.due === '다음 주'; }).length);
+  setText('c-all', a.length);
+  setText('c-work', a.filter(function(t) { return t.proj === 'work'; }).length);
+  setText('c-vonai', a.filter(function(t) { return t.proj === 'vonai'; }).length);
+  setText('c-personal', a.filter(function(t) { return t.proj === 'personal'; }).length);
+  setText('c-done', tasks.filter(function(t) { return t.done; }).length);
+}
+
+function updateProd() {
+  var total = tasks.length;
+  var done = tasks.filter(function(t) { return t.done; }).length;
+  var sc = total ? Math.round(done / total * 100) : 0;
+  setText('prod-num', sc);
+  var bar = document.getElementById('prod-bar');
+  if (bar) bar.style.width = sc + '%';
+}
+
+function updateWidget() {
+  var sorted = tasks.filter(function(t) { return !t.done; });
+  sorted.sort(function(a, b) { return calcScore(b) - calcScore(a); });
+  var fe = document.getElementById('wp-focus');
+  if (fe) fe.textContent = sorted[0] ? sorted[0].name : '모두 완료! 🎉';
+  var le = document.getElementById('wp-list');
+  if (le) {
+    le.innerHTML = sorted.slice(1, 4).map(function(t) {
+      var dc = t.pri === 'urgent' ? 'var(--red)' : t.pri === 'high' ? 'var(--accent)' : 'var(--green)';
+      return '<div class="wp-item"><div class="wp-dot" style="background:' + dc + '"></div><div class="wp-tn">' + t.name + '</div><div class="wp-d">' + t.due + '</div></div>';
+    }).join('');
+  }
+}
+
+function render() {
+  updateCounts();
+  updateProd();
+  updateWidget();
+  var list = getList();
+  var area = document.getElementById('tarea');
+  if (!list.length) {
+    area.innerHTML = '<div class="empty"><div class="empty-ic">🎉</div><div>할 일이 없습니다!<br>+ 버튼으로 추가해보세요</div></div>';
+    return;
+  }
+  var isDone = curView === 'done';
+  var secTitle = isDone ? '완료됨' : curSort === 'ai' ? 'AI 우선순위' : '정렬됨';
+  var html = '<div class="sec-head"><div class="sec-title">' + secTitle + '</div><div class="sec-line"></div><div class="sec-cnt">' + list.length + '개</div></div>';
+
+  list.forEach(function(t, i) {
+    var sc = calcScore(t);
+    var isFocus = !isDone && i === 0 && curSort === 'ai';
+    var scColor = sc >= 80 ? 'var(--red)' : sc >= 55 ? 'var(--accent)' : 'var(--green)';
+    var cc = (isFocus ? 'is-focus ' : '') + (t.pri === 'urgent' && !isFocus ? 'is-urgent ' : '') + (t.done ? 'is-done' : '');
+    var pl = {work:'💼 업무', vonai:'🤖 Von AI', personal:'🏠 개인', none:''}[t.proj] || '';
+    var priTag = t.pri === 'urgent' ? '<span class="tag t-urgent">긴급</span>' : t.pri === 'high' ? '<span class="tag t-high">높음</span>' : '';
+    html += '<div class="tcard ' + cc + '">'
+      + '<div class="stripe s-' + t.pri + '"></div>'
+      + '<button class="chk' + (t.done ? ' done' : '') + '" onclick="toggleTask(' + t.id + ')">' + (t.done ? '✓' : '') + '</button>'
+      + '<div class="tbody">'
+        + '<div class="tname' + (t.done ? ' cross' : '') + '">' + t.name + (isFocus ? ' <span style="font-size:10px;color:var(--accent)">← 집중</span>' : '') + '</div>'
+        + '<div class="tags">'
+          + priTag
+          + (isFocus ? '<span class="tag t-focus">FOCUS</span>' : '')
+          + (pl ? '<span class="tag t-proj">' + pl + '</span>' : '')
+          + (t.tag ? '<span class="tag t-tag">#' + t.tag + '</span>' : '')
+          + '<span class="tag t-date">' + t.due + '</span>'
+        + '</div>'
+      + '</div>'
+      + '<div class="tright">'
+        + '<div class="sc"><div class="sdot" style="background:' + scColor + '"></div>' + sc + '</div>'
+        + '<button class="editbtn" onclick="openEdit(' + t.id + ')">✏️</button>'
+        + '<button class="delbtn" onclick="delTask(' + t.id + ')">🗑</button>'
+      + '</div>'
+    + '</div>';
+  });
+  area.innerHTML = html;
+}
+
+function toggleTask(id) {
+  var t = tasks.find(function(x) { return x.id === id; });
+  if (!t) return;
+  t.done = !t.done;
+  saveTasks();
+  render();
+  showToast(t.done ? '✅' : '↩️', t.done ? '완료 처리했습니다' : '다시 할 일로 이동했습니다');
+}
+
+function delTask(id) {
+  if (!confirm('이 할 일을 삭제할까요?')) return;
+  tasks = tasks.filter(function(x) { return x.id !== id; });
+  saveTasks();
+  render();
+  showToast('🗑', '삭제했습니다');
+}
+
+var TITLES = {today:'오늘 할 일', focus:'집중 모드', upcoming:'예정된 일', all:'모든 할 일', done:'완료됨', work:'💼 업무', vonai:'🤖 Von AI', personal:'🏠 개인'};
+var SUBS = {today:'AI가 오늘 해야 할 일을 추려드립니다', focus:'긴급·높음 우선순위만 표시', upcoming:'이번 주·다음 주 예정', all:'모든 할 일', done:'완료된 항목 보관함', work:'업무 관련 할 일', vonai:'Von AI 프로젝트', personal:'개인 할 일'};
+
+function setView(v) {
+  curView = v;
+  document.querySelectorAll('.sitem').forEach(function(b) { b.classList.remove('on'); });
+  var el = document.getElementById('sv-' + v);
+  if (el) el.classList.add('on');
+  setText('vtitle', TITLES[v] || v);
+  setText('vsub', SUBS[v] || '');
+  render();
+}
+
+function setViewM(v) {
+  setView(v);
+  document.querySelectorAll('.btab-item').forEach(function(b) { b.classList.remove('on'); });
+  var el = document.getElementById('bt-' + v);
+  if (el) el.classList.add('on');
+}
+
+function setSort(s) {
+  curSort = s;
+  document.querySelectorAll('.chip').forEach(function(b) { b.classList.remove('on'); });
+  var el = document.getElementById('sort-' + s);
+  if (el) el.classList.add('on');
+  render();
+}
+
+function doSearch(q) {
+  curSearch = q;
+  render();
+}
+
+function openEdit(id) {
+  var t = tasks.find(function(x) { return x.id === id; });
+  if (!t) return;
+  editingId = id;
+  document.getElementById('ap-input').value = t.name;
+  document.getElementById('sel-pri').value = t.pri;
+  document.getElementById('sel-proj').value = t.proj;
+  document.getElementById('sel-tag').value = t.tag || '';
+  curDue = t.due;
+  document.querySelectorAll('.dchip').forEach(function(b) { b.classList.remove('on'); });
+  document.querySelectorAll('.dchip').forEach(function(b) { if (b.textContent === t.due) b.classList.add('on'); });
+  document.querySelector('.ap-title').textContent = '할 일 수정';
+  document.getElementById('ap-save-btn').textContent = '저장하기 →';
+  document.getElementById('addpanel').classList.add('open');
+  document.getElementById('backdrop').classList.add('show');
+  setTimeout(function() { document.getElementById('ap-input').focus(); }, 300);
+}
+
+function openAdd() {
+  editingId = null;
+  document.getElementById('ap-input').value = '';
+  document.getElementById('sel-pri').value = 'high';
+  document.getElementById('sel-proj').value = 'none';
+  document.getElementById('sel-tag').value = '';
+  curDue = '오늘';
+  document.querySelectorAll('.dchip').forEach(function(b) { b.classList.remove('on'); });
+  document.querySelectorAll('.dchip')[0].classList.add('on');
+  document.querySelector('.ap-title').textContent = '새 할 일 추가';
+  document.getElementById('ap-save-btn').textContent = '추가하기 →';
+  document.getElementById('ai-bar').style.display = 'none';
+  document.getElementById('addpanel').classList.add('open');
+  document.getElementById('backdrop').classList.add('show');
+  setTimeout(function() { document.getElementById('ap-input').focus(); }, 300);
+}
+
+function closeAdd() {
+  document.getElementById('addpanel').classList.remove('open');
+  document.getElementById('backdrop').classList.remove('show');
+  document.getElementById('ap-input').value = '';
+  document.getElementById('ai-bar').style.display = 'none';
+}
+
+var aiTimer;
+function aiDetect(val) {
+  clearTimeout(aiTimer);
+  var bar = document.getElementById('ai-bar');
+  if (val.length < 3) { bar.style.display = 'none'; return; }
+  bar.style.display = 'block';
+  bar.textContent = '🤖 분석 중...';
+  aiTimer = setTimeout(function() {
+    var sp = document.getElementById('sel-pri');
+    var spr = document.getElementById('sel-proj');
+    var st = document.getElementById('sel-tag');
+    var msg = '';
+    if (/마감|긴급|즉시|오늘|내일/.test(val)) { sp.value = 'urgent'; msg = '🔴 긴급으로 설정됩니다'; }
+    else if (/미팅|회의|발표|PT|보고/.test(val)) { sp.value = 'high'; spr.value = 'work'; st.value = '회의'; msg = '💼 업무/회의로 분류됩니다'; }
+    else if (/VON|AI|로봇|온디바이스|특허/.test(val)) { spr.value = 'vonai'; msg = '🤖 Von AI 프로젝트로 분류됩니다'; }
+    else if (/검토|리뷰|확인/.test(val)) { st.value = '검토'; msg = '🔍 검토 태그가 추가됩니다'; }
+    else if (/사다|구매|주문|사야/.test(val)) { spr.value = 'personal'; st.value = '구매'; msg = '🛒 개인/구매로 분류됩니다'; }
+    else if (/연락|전화|이메일|문자/.test(val)) { st.value = '연락'; msg = '📞 연락 태그가 추가됩니다'; }
+    else { msg = '✨ 직접 우선순위를 선택해주세요'; }
+    bar.textContent = msg;
+  }, 350);
+}
+
+function selDate(d, btn) {
+  curDue = d;
+  document.querySelectorAll('.dchip').forEach(function(b) { b.classList.remove('on'); });
+  btn.classList.add('on');
+}
+
+function saveTask() {
+  var name = document.getElementById('ap-input').value.trim();
+  if (!name) { showToast('⚠️', '할 일 내용을 입력해주세요'); return; }
+  var pri = document.getElementById('sel-pri').value;
+  var proj = document.getElementById('sel-proj').value;
+  var tag = document.getElementById('sel-tag').value;
+
+  if (editingId !== null) {
+    var t = tasks.find(function(x) { return x.id === editingId; });
+    if (t) { t.name = name; t.pri = pri; t.proj = proj; t.tag = tag; t.due = curDue; }
+    editingId = null;
+    saveTasks();
+    closeAdd();
+    render();
+    showToast('✏️', '수정됐습니다');
+  } else {
+    tasks.unshift({id: nextId++, name: name, pri: pri, proj: proj, tag: tag, due: curDue, done: false, ts: Date.now()});
+    saveTasks();
+    closeAdd();
+    render();
+    showToast('✅', '할 일이 추가됐습니다');
+  }
+}
+
+function toggleWidget() {
+  document.getElementById('wpreview').classList.toggle('show');
+}
+
+var toastTimer;
+function showToast(ic, msg) {
+  clearTimeout(toastTimer);
+  document.getElementById('toast-ic').textContent = ic;
+  document.getElementById('toast-msg').textContent = msg;
+  var t = document.getElementById('toast');
+  t.classList.add('show');
+  toastTimer = setTimeout(function() { t.classList.remove('show'); }, 2500);
+}
+
+render();
+</script>
+</body>
+</html>
